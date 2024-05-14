@@ -1,0 +1,416 @@
+/*
+프로젝트 이름 : TETRIS
+날짜 : 2024.03.01 ~ (개발중)
+이름 : 김미현
+*/
+
+#include<iostream>
+#include<Windows.h>
+#include<vector>
+#include<map>
+#include<conio.h>
+
+using namespace std;
+
+#define TABLE_X 22
+#define TABLE_Y 12
+
+//#define UP 72       
+//#define LEFT 75
+//#define DOWN 80
+//#define RIGHT 77
+//#define SPACE 32
+
+enum T_Block
+{
+    Blcok_I,
+    Block_O,
+    Blcok_Z,
+    Block_S,
+    Blcok_J,
+    Block_L,
+    Block_T,
+};
+
+void gotoxy(int x, int y) {  //커서 좌표 이동 함수로 
+    COORD pos = { x, y };
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+class MainMenu {
+public:MainMenu() {
+    int c;
+	cout << "\n\n\n\n\n";
+    cout << "\t\t\t"; cout << "@@@@@@@@@@@@  @@@@@@@@@   @@@@@@@@@@@  @@@@@@@@@@   @@@@@@@   @@@@@@@@@\n";
+    cout << "\t\t\t"; cout << "      @       @                @       @        @      @      @        \n";
+    cout << "\t\t\t"; cout << "      @       @                @       @        @      @      @        \n";
+    cout << "\t\t\t"; cout << "      @       @@@@@@@@@        @       @      @        @      @@@@@@@@@\n";
+    cout << "\t\t\t"; cout << "      @       @                @       @ @ @           @              @\n";
+    cout << "\t\t\t"; cout << "      @       @                @       @      @        @              @\n";
+    cout << "\t\t\t"; cout << "      @       @@@@@@@@@        @       @        @   @@@@@@@   @@@@@@@@@\n\n\n\n\n";
+    cout << "\t\t\t\t"; cout << "                   WELCOME TO TETRIS\n\n\n\n";
+    cout << "\t\t\t"; cout << "                  게임을 시작하려면 아무키나 누르세요.\n";
+
+    c = getchar(); //아무키 입력 기다림
+    if (c != 0)
+    {
+        Select();
+    }
+
+    system("cls"); //콘솔 창 clear
+    }
+};
+
+
+
+class Select {
+public:Select() {
+    int x = 34;
+    int y = 20;
+
+    cout << "\n\n\n\n\n";
+    cout << "\t\t\t"; cout << "@@@@@@@@@@@@  @@@@@@@@@   @@@@@@@@@@@  @@@@@@@@@    @@@@@@@   @@@@@@@@@\n";
+    cout << "\t\t\t"; cout << "      @       @                @       @        @      @      @        \n";
+    cout << "\t\t\t"; cout << "      @       @                @       @        @      @      @        \n";
+    cout << "\t\t\t"; cout << "      @       @@@@@@@@@        @       @      @        @      @@@@@@@@@\n";
+    cout << "\t\t\t"; cout << "      @       @                @       @ @ @           @              @\n";
+    cout << "\t\t\t"; cout << "      @       @                @       @      @        @              @\n";
+    cout << "\t\t\t"; cout << "      @       @@@@@@@@@        @       @        @   @@@@@@@   @@@@@@@@@\n\n\n\n\n";
+    cout << "\t\t\t\t"; cout << "                   Please select an option\n\n\n\n";
+
+    gotoxy(x - 2, y);
+    cout << "> GAME START";
+    gotoxy(x, y + 1);
+    cout << "RANKING";
+    gotoxy(x, y + 2);
+    cout << "EXIT";
+
+    while (1) {
+    //int n = ArrowKey();
+    //선택지 선택을 키보드로 하기
+    }
+
+    system("cls"); //콘솔 창 clear
+}
+};
+
+typedef struct _currentPosition
+{
+    int X;
+    int Y;
+} Postion;
+
+void ConsoleInit() {
+    HANDLE consolehandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO ConsoleCursor = { 0, }; //마우스 커서
+    CONSOLE_CURSOR_INFO info;
+    info.dwSize = 100;
+    info.bVisible = FALSE;             //마우스 커서 숨김
+    SetConsoleCursorInfo(consolehandle, &info);
+    
+}
+
+
+
+//int KeyNumber() {        //메뉴를 선택할때 키보드 키 설정(위: 72,왼쪽: 75, 아래:80, 오른쪽:77)
+//    int temp;
+//
+//    while (true) {
+//        temp = _getch();
+//        cout << temp << endl;
+//    }
+//}
+
+//int ArrowKey() {          //키보드 입력 함수 생성
+//    int i = _getch();
+//    if (i == 224) {
+//        i = _getch();
+//        switch (i) {
+//        case 72: 
+//            break;
+//        case 75: 
+//            break;
+//        case 80: 
+//            break;
+//        case 77: 
+//            break;
+//        }
+//    }
+//}
+
+class Block
+{
+public:
+    int Blcok_I[5][5] = {
+        {0,0,0,0,0},
+        {0,0,1,0,0},
+        {0,0,1,0,0},
+        {0,0,1,0,0},
+        {0,0,1,0,0}
+    };
+
+    int Block_O[5][5] = {
+        {0,0,0,0,0},
+        {0,1,1,0,0},
+        {0,1,1,0,0},
+        {0,0,0,0,0},
+        {0,0,0,0,0}
+    };
+
+    int Blcok_Z[5][5] = {
+        {0,0,0,0,0},
+        {0,1,1,0,0},
+        {0,0,1,1,0},
+        {0,0,0,0,0},
+        {0,0,0,0,0}
+    };
+
+    int Block_S[5][5] = {
+        {0,0,0,0,0},
+        {0,0,1,1,0},
+        {0,1,1,0,0},
+        {0,0,0,0,0},
+        {0,0,0,0,0}
+    };
+
+    int Blcok_J[5][5] = {
+        {0,0,0,1,0},
+        {0,0,0,1,0},
+        {0,0,1,1,0},
+        {0,0,0,0,0},
+        {0,0,0,0,0}
+    };
+
+    int Block_L[5][5] = {
+        {0,1,0,0,0},
+        {0,1,0,0,0},
+        {0,1,1,0,0},
+        {0,0,0,0,0},
+        {0,0,0,0,0}
+    };
+    int Block_T[5][5] = {
+        {0,0,0,0,0},
+        {0,1,1,1,0},
+        {0,0,1,0,0},
+        {0,0,0,0,0},
+        {0,0,0,0,0}
+    };
+    
+};
+
+class GAMEMAP {
+private:
+    T_Block Block;
+
+    void InitMap(char map[TABLE_Y][TABLE_X])   //맵 초기화
+    {
+        for (int i = 0; i < TABLE_Y; i++)
+        {
+            for (int j = 0; j < TABLE_X; j++)
+                map[i][j] = 0;
+        }
+    }
+
+    void CreateMap(char map[TABLE_Y][TABLE_X])  //맵 생성
+    {
+        gotoxy(20, 10);
+        for (int i = 0; i < TABLE_Y; i++)
+        {
+            for (int j = 0; j < TABLE_X + 2; j++)
+            {
+                gotoxy(j + 10, i + 2);
+                if (j == TABLE_X || j == 0 || i == TABLE_Y) {
+                    cout << "▩";
+                }
+            }
+        }
+
+        gotoxy(22, 10);
+        for (int i = 0; i < TABLE_Y; i++)
+        {
+            for (int j = 0; j < TABLE_X; j++)
+            {
+                gotoxy(22 + j, i + 2);
+                if (map[i][j] == '0')
+                    cout << "  ";
+                else if (map[i][j] == '1')
+                    cout << "■";
+            }
+            cout << endl;
+        }
+    }
+
+    void CreateSubMAP(int total, int score) {
+        gotoxy(66, 11);
+        cout << "NEXT";
+        for (int i = 0; i <= 7; i++)
+        {
+            for (int j = 0; j <= 7; j++)
+            {
+                gotoxy(2 * j + 66, i + 11);
+                if (j == 7 || j == 0 || i == 7)
+                    cout << "▩";
+            }
+        }
+
+
+        gotoxy(65, 33);
+        cout << "SCORE";
+        for (int i = 0; i <= 4; i++)
+        {
+            for (int j = 0; j <= 7; j++)
+            {
+                gotoxy(55 + j * 2, 18 + i);
+                if (j == 0 || j == 7 || i == 4)
+                    cout << "▩";
+            }
+        }
+
+        gotoxy(67, 35);
+        if (score > 100)
+            gotoxy(66, 35);
+        else if (score > 1000)
+            gotoxy(65, 35);
+        else if (score > 10000)
+            gotoxy(64, 35);
+        else if (score > 100000)
+            gotoxy(63, 35);
+        cout << score;
+
+    }
+
+    void RemoveShape(char Map[TABLE_Y][TABLE_X], int blockShape[5][5])
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                if (blockShape[i][j] == 1); //블록이면 삭제
+            }
+        }
+    }
+
+    void CheckLine(char Map[TABLE_Y][TABLE_X], int* score)
+    {
+        int count = 0;
+        int linecount = 0;
+        int height = 0;
+
+        //블록 없애는 수 체크
+
+        if (linecount == 1)
+            (*score) += 1000;
+        else if (linecount == 3)
+            (*score) += 4000;
+        else if (linecount == 5)
+            (*score) += 8000;
+    }
+
+    bool GoDown(char map[TABLE_Y][TABLE_X]) {
+
+    }
+
+    void GoLeft(char Map[TABLE_Y][TABLE_X], int blockShape[5][5]) {
+        
+    }
+
+    void GoRight(char Map[TABLE_Y][TABLE_X], int blockShape[5][5]) {
+
+    }
+
+    void Rotate(char Map[TABLE_Y][TABLE_X], int blockShape[5][5]) {
+
+    }
+
+    bool GameOverCheck(char map[TABLE_Y][TABLE_X]) {
+
+    }
+
+    void GameOver(int* score) {
+        cout << "\n\n\n\n\n";
+        cout << "\t\t\t"; cout << "     @@@@@@        @       @           @   @@@@@@@     @@@@    @           @   @@@@@@@    @@@@@@   \n";
+        cout << "\t\t\t"; cout << "    @             @ @      @@         @@   @          @    @    @         @    @          @     @  \n";
+        cout << "\t\t\t"; cout << "   @             @   @     @ @       @ @   @         @      @    @       @     @          @      @ \n";
+        cout << "\t\t\t"; cout << "  @     @@@@    @@@@@@@    @  @     @  @   @@@@@@@   @      @     @     @      @@@@@@@    @     @  \n";
+        cout << "\t\t\t"; cout << "   @       @    @     @    @   @   @   @   @         @      @      @   @       @          @@@@@@   \n";
+        cout << "\t\t\t"; cout << "    @     @    @       @   @    @ @    @   @          @    @        @ @        @          @     @   \n";
+        cout << "\t\t\t"; cout << "     @@@@@    @         @  @     @     @   @@@@@@@     @@@@          @         @@@@@@@    @      @  \n";
+
+        cout << "\t\t\t\t\t\t"; cout << *score << " : " << endl; //gotoxy()함수로 바꾸기
+
+    }
+};
+
+int Play(char Map[TABLE_Y][TABLE_X])
+{
+
+    int Score = 0, total = 0;
+    int BlockShape[5][5] = {}; //블럭 5x5
+    int NextBlock[5][5] = {};  //다음 블럭
+    bool Bottom = false;
+    bool noRotate = false;
+    GAMEMAP map;
+    T_Block block;
+
+    //맵 초기화
+    //맵 생성
+    //다음 블록, 점수등 서브맵 생성
+
+
+    //블럭 모양 설정, 회전 가능 도형인지 반환
+    //다음 블럭 모양 설정
+
+    while (true)
+    {
+
+        if (Bottom == true)  //블록의 움직임이 끝나면
+        {
+            if (map.GameOverCheck(Map) == true) //게임 오버 규칙 참이면
+            {
+                map.GameOver(&Score);           //점수 보여주고
+                return 0; //while문 탈출
+            }
+
+            map.CheckLine(Map, &Score); //라인 체크
+
+            for (int i = 0; i < 5; i++) //block을 다음 블럭 모양으로 가져오기
+                for (int j = 0; j < 5; j++)
+                    BlockShape[i][j] = NextBlock[i][j];
+
+            //다음 블럭 새로 만들기
+            //다음 블럭 모양 Map에 출력
+            Bottom = false; //새로운 블록의 움직임을 위해 false로 변환
+        }
+
+        map.CreateMap(Map);
+        map.CreateSubMap(total, Score);
+
+
+        Bottom = map.GoDown(Map);  //이상함
+
+        if (Bottom == true) continue;
+
+        if (GetAsyncKeyState(VK_UP) & 0x8000) //키보드 ↑를 누르면 블록을 회전
+            if (noRotate == false)
+                map.Rotate(Map, BlockShape);
+
+        if (GetAsyncKeyState(VK_LEFT) & 0x8000) //키보드 ←를 누르면 블록을 왼쪽으로 이동
+            map.GoLeft(Map, BlockShape);
+
+        if (GetAsyncKeyState(VK_RIGHT) & 0x8000) //키보드 →를 누르면 블록을 오른쪽으로 이동
+            map.GoRight(Map, BlockShape);
+    }
+    return 0;
+}
+
+int main(void) {
+    system("mode con: cols=300 lines=50");    //콘솔창 크키 조절
+    system("title TETRIS | color 09");        //콘솔창의 이름 변경, 콘솔창 배경색과 글자색
+    system("cls");                            //콘솔창 정리
+
+    char Map[TABLE_Y][TABLE_X] = {};
+
+    MainMenu();                                
+    return 0;
+
+}
